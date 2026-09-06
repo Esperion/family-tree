@@ -1,0 +1,12 @@
+# The repo is authored on Windows but built in Linux containers (Codespaces,
+# GitHub Actions, Vercel). Normalise to LF everywhere so line endings never
+# show up as spurious diffs or break shell scripts in CI.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
