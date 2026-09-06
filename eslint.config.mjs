@@ -10,7 +10,10 @@ const compat = new FlatCompat({ baseDirectory: __dirname });
 const eslintConfig = [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
   {
-    ignores: [".next/**", "node_modules/**", "out/**"],
+    // next-env.d.ts is generated and rewritten by `next build`, which adds a
+    // triple-slash path reference that @typescript-eslint rejects. Next owns
+    // the file, so it is not ours to lint.
+    ignores: [".next/**", "node_modules/**", "out/**", "next-env.d.ts"],
   },
 ];
 
