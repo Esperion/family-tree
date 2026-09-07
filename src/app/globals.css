@@ -309,6 +309,10 @@ body {
 }
 
 .button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   font: inherit;
   font-weight: 500;
   padding: 9px 16px;
@@ -317,16 +321,52 @@ body {
   border: 1px solid var(--accent);
   border-radius: 4px;
   cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
 }
 
 .button:hover {
   filter: brightness(1.05);
 }
 
+.button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .button-secondary {
   color: var(--ink);
   background: var(--surface);
   border-color: var(--rule);
+}
+
+.button-secondary:hover {
+  filter: none;
+  border-color: var(--muted);
+}
+
+.button-danger {
+  color: #d9534f;
+  background: var(--surface);
+  border-color: color-mix(in srgb, #d9534f 45%, var(--rule));
+}
+
+.button-danger:hover {
+  filter: none;
+  background: #d9534f14;
+}
+
+.button-small {
+  padding: 5px 10px;
+  font-size: 12.5px;
+  font-weight: 400;
+}
+
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
 }
 
 /* ---- family directory (Phase 2) ---- */
@@ -437,12 +477,19 @@ body {
 }
 
 .stack-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   margin-top: 10px;
   font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
   font-size: 10.5px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
+}
+
+.stack-form label:first-of-type {
+  margin-top: 0;
 }
 
 .stack-form input,
@@ -576,17 +623,30 @@ body {
 
 .mng-unions {
   list-style: none;
-  margin: 0 0 18px;
+  margin: 0 0 24px;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   font-size: 14px;
 }
 
+.mng-unions li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 .mng-inline {
-  display: inline;
-  margin-left: 8px;
+  display: inline-flex;
+  margin: 0;
+}
+
+/* the add-couple form, right after the couples list */
+.mng-unions + form.stack-form {
+  padding-top: 20px;
+  border-top: 1px solid var(--rule);
 }
 
 /* ---- tree canvas (Phase 5) ---- */
@@ -599,10 +659,21 @@ body {
   background: var(--bg);
 }
 
+.tree-canvas-hint {
+  margin: 0;
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--rule);
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
 .tree-canvas-viewport {
   overflow: auto;
   overscroll-behavior: contain;
   cursor: grab;
+  touch-action: pan-x pan-y;
   background:
     repeating-linear-gradient(0deg, transparent 0 11px, color-mix(in srgb, var(--rule) 35%, transparent) 11px 12px),
     repeating-linear-gradient(90deg, transparent 0 11px, color-mix(in srgb, var(--rule) 20%, transparent) 11px 12px);
@@ -614,6 +685,46 @@ body {
 
 .tree-canvas-scene {
   position: relative;
+  user-select: none;
+}
+
+.tree-node {
+  cursor: grab;
+}
+
+.tree-node.is-dragging {
+  cursor: grabbing;
+}
+
+.tree-tip {
+  position: absolute;
+  z-index: 5;
+  padding: 10px 12px;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  background: var(--surface);
+  box-shadow: 0 6px 20px -8px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+}
+
+.tree-tip-name {
+  margin: 0 0 4px;
+  font-weight: 600;
+  font-size: 13.5px;
+}
+
+.tree-tip-row {
+  margin: 2px 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.tree-tip-notes {
+  margin: 6px 0 0;
+  padding-top: 6px;
+  border-top: 1px solid var(--rule);
+  font-size: 12px;
+  color: var(--ink);
 }
 
 .tree-canvas-scene svg {

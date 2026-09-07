@@ -44,15 +44,17 @@ export default async function FamilyPage({
         <p className="sub">
           {people.length} {people.length === 1 ? "person" : "people"} across {rows.length}{" "}
           {rows.length === 1 ? "generation" : "generations"}, derived at render time.
-          {editable && (
-            <>
-              {" · "}
-              <Link href={`/f/${family.slug}/manage`}>Manage people</Link>
-              {" · "}
-              <Link href={`/f/${family.slug}/members`}>Editors</Link>
-            </>
-          )}
         </p>
+        {editable && (
+          <div className="button-row">
+            <Link href={`/f/${family.slug}/manage`} className="button button-secondary">
+              Manage people
+            </Link>
+            <Link href={`/f/${family.slug}/members`} className="button button-secondary">
+              Editors
+            </Link>
+          </div>
+        )}
       </header>
 
       {people.length > 0 ? (

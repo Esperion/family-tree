@@ -174,22 +174,26 @@ export default async function ManagePage({
                         <label>Photo
                           <input type="file" name="photo" accept="image/*" />
                         </label>
-                        <button type="submit" className="button button-secondary">Upload photo</button>
-                        {person.photoUrl && (
-                          <button
-                            type="submit"
-                            className="link-button"
-                            formAction={removePhotoAction.bind(null, slug)}
-                          >
-                            Remove photo
+                        <div className="button-row">
+                          <button type="submit" className="button button-secondary button-small">
+                            Upload photo
                           </button>
-                        )}
+                          {person.photoUrl && (
+                            <button
+                              type="submit"
+                              className="button button-secondary button-small"
+                              formAction={removePhotoAction.bind(null, slug)}
+                            >
+                              Remove photo
+                            </button>
+                          )}
+                        </div>
                       </form>
                     )}
 
                     <form action={removePersonAction.bind(null, slug)}>
                       <input type="hidden" name="personId" value={person.id} />
-                      <button type="submit" className="link-button mng-danger">
+                      <button type="submit" className="button button-danger button-small">
                         Remove {person.givenName}
                       </button>
                     </form>
@@ -213,7 +217,7 @@ export default async function ManagePage({
               {union.endYear ? `–${union.endYear}` : ""}
               <form action={removeUnionAction.bind(null, slug)} className="mng-inline">
                 <input type="hidden" name="unionId" value={union.id} />
-                <button type="submit" className="link-button">Remove</button>
+                <button type="submit" className="button button-danger button-small">Remove</button>
               </form>
             </li>
           ))}

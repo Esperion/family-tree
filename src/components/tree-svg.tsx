@@ -1,14 +1,16 @@
-import { NODE_W, NODE_H, type TreeLayout } from "@/lib/tree-layout";
+import type { PointerEvent as ReactPointerEvent } from "react";
+
+import {
+  NODE_W,
+  NODE_H,
+  type LayoutNode,
+  type EdgePath,
+  type UnionSegment,
+} from "@/lib/tree-layout";
 
 const AVATAR_CX = 20;
 const AVATAR_CY = NODE_H / 2;
 const AVATAR_R = 13;
-
-/** Orthogonal connector: down from the parents, across, then down to the child. */
-function elbow(fromX: number, fromY: number, toX: number, toY: number) {
-  const midY = fromY + (toY - fromY) / 2;
-  return `M ${fromX} ${fromY} V ${midY} H ${toX} V ${toY}`;
-}
 
 function initials(name: string) {
   return name
@@ -20,12 +22,30 @@ function initials(name: string) {
     .toUpperCase();
 }
 
+interface Props {
+  nodes: LayoutNode[];
+  paths: EdgePath[];
+  unions: UnionSegment[];
+  draggingId?: string | null;
+  onNodePointerDown?: (id: string, e: ReactPointerEvent) => void;
+  onNodePointerMove?: (id: string, e: ReactPointerEvent) => void;
+  onNodePointerUp?: (id: string, e: ReactPointerEvent) => void;
+}
+
 /**
  * The drawn contents of the family-tree SVG: connectors, union lines and node
- * cards. Shared by the static server render and the interactive canvas, so it
- * carries no wrapper element and no interactivity.
+ * cards. Presentational — it takes already-positioned nodes and pre-computed
+ * edge geometry, and forwards pointer/hover events on each node.
  */
-export function TreeSvgLayer({ layout }: { layout: TreeLayout }) {
+export function TreeSvgLayer({
+  nodes,
+  paths,
+  unions,
+  draggingId,
+  onNodePointerDown,
+  onNodePointerMove,
+  onNodePointerUp,
+}: Props) {
   return (
     <>
       <defs>
@@ -35,19 +55,14 @@ export function TreeSvgLayer({ layout }: { layout: TreeLayout }) {
       </defs>
 
       <g fill="none">
-        {layout.parentEdges.map((edge, i) => (
-          <path
-            key={`e${i}`}
-            d={elbow(edge.fromX, edge.fromY, edge.toX, edge.toY)}
-            stroke="var(--rule)"
-            strokeWidth={1.5}
-          />
+        {paths.map((path) => (
+          <path key={path.key} d={path.d} stroke="var(--rule)" strokeWidth={1.5} />
         ))}
       </g>
 
       <g>
-        {layout.unionLines.map((line, i) => (
-          <g key={`u${i}`}>
+        {unions.map((line) => (
+          <g key={line.key}>
             <line
               x1={line.ax}
               y1={line.ay}
@@ -74,21 +89,24 @@ export function TreeSvgLayer({ layout }: { layout: TreeLayout }) {
       </g>
 
       <g>
-        {layout.nodes.map((node) => (
-          <g key={node.id} transform={`translate(${node.x} ${node.y})`}>
+        {nodes.map((node) => (
+          <g
+            key={node.id}
+            data-node-id={node.id}
+            className={`tree-node${draggingId === node.id ? " is-dragging" : ""}`}
+            transform={`translate(${node.x} ${node.y})`}
+            onPointerDown={(e) => onNodePointerDown?.(node.id, e)}
+            onPointerMove={(e) => onNodePointerMove?.(node.id, e)}
+            onPointerUp={(e) => onNodePointerUp?.(node.id, e)}
+          >
             <rect
               width={NODE_W}
               height={NODE_H}
               rx={6}
               fill="var(--surface)"
-              stroke="var(--rule)"
+              stroke={draggingId === node.id ? "var(--accent)" : "var(--rule)"}
             />
-            <circle
-              cx={AVATAR_CX}
-              cy={AVATAR_CY}
-              r={AVATAR_R}
-              fill="var(--accent-soft)"
-            />
+            <circle cx={AVATAR_CX} cy={AVATAR_CY} r={AVATAR_R} fill="var(--accent-soft)" />
             {node.photoUrl ? (
               <image
                 href={node.photoUrl}

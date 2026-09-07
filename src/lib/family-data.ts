@@ -45,6 +45,8 @@ export async function loadFamilyGraph(familyId: string): Promise<Person[]> {
     parents: parentsByChild.get(person.id) ?? [],
     aliases: person.aliases,
     photoUrl: person.photoUrl,
+    gender: person.gender,
+    notes: person.notes,
   }));
 }
 

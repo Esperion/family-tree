@@ -16,6 +16,8 @@ export interface Person {
   /** Display-only extras, populated from the database (never in the seed fixture). */
   aliases?: string[];
   photoUrl?: string | null;
+  gender?: string | null;
+  notes?: string | null;
 }
 
 export const family: Person[] = [
