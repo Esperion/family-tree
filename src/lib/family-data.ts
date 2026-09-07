@@ -45,26 +45,3 @@ export async function loadFamilyGraph(familyId: string): Promise<Person[]> {
     parents: parentsByChild.get(person.id) ?? [],
   }));
 }
-
-export interface FamilyView {
-  id: string;
-  slug: string;
-  name: string;
-  description: string | null;
-  people: Person[];
-}
-
-/**
- * The default family for the single-family landing page. Phase 2 replaces this
- * with a directory and per-slug routes; until then the page shows whichever
- * family was seeded first.
- */
-export async function loadDefaultFamily(): Promise<FamilyView | null> {
-  const family = await prisma.family.findFirst({
-    orderBy: { createdAt: "asc" },
-    select: { id: true, slug: true, name: true, description: true },
-  });
-  if (!family) return null;
-
-  return { ...family, people: await loadFamilyGraph(family.id) };
-}

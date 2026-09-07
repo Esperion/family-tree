@@ -1,51 +1,92 @@
-import { FamilyTree } from "@/components/FamilyTree";
-import { loadDefaultFamily } from "@/lib/family-data";
-import { generations } from "@/lib/family";
+import Link from "next/link";
+import type { Visibility } from "@prisma/client";
 
-// The page reads the database per request, so it can't be statically rendered
-// at build time. Phase 2 adds per-family routes; this stays dynamic.
+import { getViewer } from "@/lib/authz";
+import { listDirectory } from "@/lib/families";
+
 export const dynamic = "force-dynamic";
 
-export default async function Home() {
-  const family = await loadDefaultFamily();
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string; mine?: string; visibility?: string }>;
+}) {
+  const sp = await searchParams;
+  const viewer = await getViewer();
 
-  if (!family) {
-    return (
-      <main className="page">
-        <header className="masthead">
-          <p className="eyebrow">Proof of concept</p>
-          <h1>Family Tree</h1>
-          <p className="sub">
-            No family has been seeded yet. Run <code>npm run db:deploy</code> then{" "}
-            <code>npm run db:seed</code> to populate this page.
-          </p>
-        </header>
-      </main>
-    );
-  }
+  const mine = sp.mine === "1";
+  const visibility: Visibility | undefined =
+    sp.visibility === "PUBLIC" || sp.visibility === "PRIVATE" ? sp.visibility : undefined;
 
-  const rows = generations(family.people);
+  const families = await listDirectory({ q: sp.q?.trim() || undefined, mine, visibility });
 
   return (
     <main className="page">
       <header className="masthead">
         <p className="eyebrow">Proof of concept</p>
-        <h1>Family Tree</h1>
+        <h1>Families</h1>
         <p className="sub">
-          {family.people.length} people across {rows.length} generations, loaded from Postgres. Each
-          person stores only their own parents; every generation, relationship and count on this page
-          is still derived at render time.
+          {viewer
+            ? "Public families, plus the ones you can edit."
+            : "Public families. Sign in to create your own or edit one you belong to."}
         </p>
       </header>
 
-      <FamilyTree people={family.people} />
+      <div className="dir-toolbar">
+        <form className="dir-filters" method="get">
+          <input
+            type="search"
+            name="q"
+            defaultValue={sp.q ?? ""}
+            placeholder="Search by name"
+            aria-label="Search families by name"
+          />
+          <select name="visibility" defaultValue={visibility ?? ""} aria-label="Visibility">
+            <option value="">Any visibility</option>
+            <option value="PUBLIC">Public</option>
+            <option value="PRIVATE">Private</option>
+          </select>
+          {viewer && (
+            <label className="dir-mine">
+              <input type="checkbox" name="mine" value="1" defaultChecked={mine} />
+              Only mine
+            </label>
+          )}
+          <button type="submit" className="button button-secondary">
+            Filter
+          </button>
+        </form>
 
-      <footer className="foot">
-        <p>
-          Pushed to GitHub, verified by Actions, deployed by Vercel. Nothing in this pipeline runs on
-          a development machine.
-        </p>
-      </footer>
+        {viewer && (
+          <Link href="/f/new" className="button">
+            New family
+          </Link>
+        )}
+      </div>
+
+      {families.length === 0 ? (
+        <p className="sub">No families match.</p>
+      ) : (
+        <ul className="dir-grid">
+          {families.map((family) => (
+            <li key={family.id} className="dir-card">
+              <div className="dir-card-head">
+                <h2>
+                  <Link href={`/f/${family.slug}`}>{family.name}</Link>
+                </h2>
+                <span className={`badge badge-${family.visibility.toLowerCase()}`}>
+                  {family.visibility.toLowerCase()}
+                </span>
+              </div>
+              {family.description && <p className="dir-card-desc">{family.description}</p>}
+              <p className="dir-card-meta">
+                {family.peopleCount} {family.peopleCount === 1 ? "person" : "people"}
+                {family.isEditor && " · you can edit"}
+              </p>
+            </li>
+          ))}
+        </ul>
+      )}
     </main>
   );
 }

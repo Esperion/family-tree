@@ -328,3 +328,135 @@ body {
   background: var(--surface);
   border-color: var(--rule);
 }
+
+/* ---- family directory (Phase 2) ---- */
+.dir-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+
+.dir-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.dir-filters input[type="search"],
+.dir-filters select {
+  padding: 8px 10px;
+  font: inherit;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+}
+
+.dir-mine {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.dir-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
+.dir-card {
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  background: var(--surface);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dir-card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.dir-card-head h2 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.dir-card-head h2 a {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.dir-card-head h2 a:hover {
+  color: var(--accent);
+}
+
+.dir-card-desc {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--muted);
+}
+
+.dir-card-meta {
+  margin: 0;
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.badge-public {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.badge-private {
+  background: color-mix(in srgb, var(--muted) 18%, transparent);
+  color: var(--muted);
+}
+
+/* ---- generic stacked form (Phase 2) ---- */
+.stack-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 440px;
+}
+
+.stack-form label {
+  margin-top: 10px;
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.stack-form input,
+.stack-form select,
+.stack-form textarea {
+  padding: 9px 11px;
+  font: inherit;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+}
+
+.stack-form .button {
+  margin-top: 16px;
+  align-self: flex-start;
+}
