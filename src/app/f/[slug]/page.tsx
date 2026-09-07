@@ -2,8 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { FamilyTree } from "@/components/FamilyTree";
+import { FamilyTreeDiagram } from "@/components/FamilyTreeDiagram";
 import { generations } from "@/lib/family";
-import { loadFamilyGraph } from "@/lib/family-data";
+import { loadFamilyGraph, loadUnions } from "@/lib/family-data";
 import { prisma } from "@/lib/db";
 import { canView, canEdit, familyRole } from "@/lib/authz";
 
@@ -20,7 +21,10 @@ export default async function FamilyPage({
   // A private family the viewer can't see is indistinguishable from a missing one.
   if (!family || !(await canView(family))) notFound();
 
-  const people = await loadFamilyGraph(family.id);
+  const [people, unions] = await Promise.all([
+    loadFamilyGraph(family.id),
+    loadUnions(family.id),
+  ]);
   const rows = generations(people);
   const editable = await canEdit(family.id);
   const role = await familyRole(family);
@@ -50,7 +54,10 @@ export default async function FamilyPage({
       </header>
 
       {people.length > 0 ? (
-        <FamilyTree people={people} />
+        <>
+          <FamilyTreeDiagram people={people} unions={unions} />
+          <FamilyTree people={people} />
+        </>
       ) : (
         <p className="sub">
           No people yet.{" "}

@@ -588,3 +588,19 @@ body {
   display: inline;
   margin-left: 8px;
 }
+
+/* ---- tree diagram (Phase 5) ---- */
+.tree-diagram {
+  margin: 0 0 44px;
+  overflow-x: auto;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  background:
+    linear-gradient(var(--bg) 0 0) padding-box,
+    repeating-linear-gradient(0deg, transparent, transparent 11px, color-mix(in srgb, var(--rule) 40%, transparent) 11px, color-mix(in srgb, var(--rule) 40%, transparent) 12px);
+  padding: 4px;
+}
+
+.tree-diagram svg {
+  display: block;
+}

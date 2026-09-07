@@ -47,3 +47,17 @@ export async function loadFamilyGraph(familyId: string): Promise<Person[]> {
     photoUrl: person.photoUrl,
   }));
 }
+
+/** Couple links for the diagram, in the shape `layoutTree` expects. */
+export async function loadUnions(familyId: string) {
+  const rows = await prisma.union.findMany({
+    where: { familyId },
+    select: { partnerAId: true, partnerBId: true, kind: true, startYear: true },
+  });
+  return rows.map((row) => ({
+    partnerAId: row.partnerAId,
+    partnerBId: row.partnerBId,
+    kind: row.kind,
+    startYear: row.startYear,
+  }));
+}
