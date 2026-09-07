@@ -5,7 +5,7 @@ import { FamilyTree } from "@/components/FamilyTree";
 import { generations } from "@/lib/family";
 import { loadFamilyGraph } from "@/lib/family-data";
 import { prisma } from "@/lib/db";
-import { canView, canEdit } from "@/lib/authz";
+import { canView, canEdit, familyRole } from "@/lib/authz";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +23,7 @@ export default async function FamilyPage({
   const people = await loadFamilyGraph(family.id);
   const rows = generations(people);
   const editable = await canEdit(family.id);
+  const role = await familyRole(family);
 
   return (
     <main className="page">
@@ -30,6 +31,7 @@ export default async function FamilyPage({
         <p className="eyebrow">
           <Link href="/">Families</Link> / {family.slug}
           {family.visibility === "PRIVATE" && " · private"}
+          {role !== "viewer" && <span className={`badge badge-${role}`}> {role}</span>}
         </p>
         <h1>{family.name}</h1>
         {family.description && <p className="sub">{family.description}</p>}
@@ -38,8 +40,10 @@ export default async function FamilyPage({
           {rows.length === 1 ? "generation" : "generations"}, derived at render time.
           {editable && (
             <>
-              {" "}
-              <Link href={`/f/${family.slug}/manage`}>Manage</Link>
+              {" · "}
+              <Link href={`/f/${family.slug}/manage`}>Manage people</Link>
+              {" · "}
+              <Link href={`/f/${family.slug}/members`}>Editors</Link>
             </>
           )}
         </p>

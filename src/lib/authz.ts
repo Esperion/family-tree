@@ -74,3 +74,27 @@ export async function assertCanEdit(familyId: string): Promise<Viewer> {
   }
   return viewer;
 }
+
+/** Throw unless the viewer may manage this family (creator or superadmin). */
+export async function assertCanManage(family: {
+  createdById: string | null;
+}): Promise<Viewer> {
+  const viewer = await getViewer();
+  if (!viewer || !(await canManage(family))) {
+    throw new Error("Not authorized to manage this family");
+  }
+  return viewer;
+}
+
+export type FamilyRole = "admin" | "editor" | "viewer";
+
+/** The viewer's standing in one family, for badges and conditional UI. */
+export async function familyRole(family: {
+  id: string;
+  createdById: string | null;
+}): Promise<FamilyRole> {
+  const viewer = await getViewer();
+  if (viewer?.isSuperAdmin) return "admin";
+  if (viewer && (await getEditableFamilyIds()).has(family.id)) return "editor";
+  return "viewer";
+}
