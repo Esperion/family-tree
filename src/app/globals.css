@@ -589,18 +589,57 @@ body {
   margin-left: 8px;
 }
 
-/* ---- tree diagram (Phase 5) ---- */
-.tree-diagram {
+/* ---- tree canvas (Phase 5) ---- */
+.tree-canvas {
+  position: relative;
   margin: 0 0 44px;
-  overflow-x: auto;
   border: 1px solid var(--rule);
   border-radius: 8px;
-  background:
-    linear-gradient(var(--bg) 0 0) padding-box,
-    repeating-linear-gradient(0deg, transparent, transparent 11px, color-mix(in srgb, var(--rule) 40%, transparent) 11px, color-mix(in srgb, var(--rule) 40%, transparent) 12px);
-  padding: 4px;
+  overflow: hidden;
+  background: var(--bg);
 }
 
-.tree-diagram svg {
+.tree-canvas-viewport {
+  overflow: auto;
+  overscroll-behavior: contain;
+  cursor: grab;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 11px, color-mix(in srgb, var(--rule) 35%, transparent) 11px 12px),
+    repeating-linear-gradient(90deg, transparent 0 11px, color-mix(in srgb, var(--rule) 20%, transparent) 11px 12px);
+}
+
+.tree-canvas-viewport:active {
+  cursor: grabbing;
+}
+
+.tree-canvas-scene {
+  position: relative;
+}
+
+.tree-canvas-scene svg {
   display: block;
+}
+
+.tree-canvas-controls {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  display: flex;
+  gap: 4px;
+}
+
+.tree-canvas-controls button {
+  font: inherit;
+  min-width: 30px;
+  height: 28px;
+  padding: 0 8px;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.tree-canvas-controls button:hover {
+  border-color: var(--muted);
 }

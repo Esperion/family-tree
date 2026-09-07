@@ -2,9 +2,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { FamilyTree } from "@/components/FamilyTree";
-import { FamilyTreeDiagram } from "@/components/FamilyTreeDiagram";
+import { FamilyTreeCanvas } from "@/components/FamilyTreeCanvas";
 import { generations } from "@/lib/family";
 import { loadFamilyGraph, loadUnions } from "@/lib/family-data";
+import { layoutTree } from "@/lib/tree-layout";
 import { prisma } from "@/lib/db";
 import { canView, canEdit, familyRole } from "@/lib/authz";
 
@@ -26,6 +27,7 @@ export default async function FamilyPage({
     loadUnions(family.id),
   ]);
   const rows = generations(people);
+  const layout = layoutTree(people, unions);
   const editable = await canEdit(family.id);
   const role = await familyRole(family);
 
@@ -55,7 +57,7 @@ export default async function FamilyPage({
 
       {people.length > 0 ? (
         <>
-          <FamilyTreeDiagram people={people} unions={unions} />
+          <FamilyTreeCanvas layout={layout} />
           <FamilyTree people={people} />
         </>
       ) : (
