@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
-import { AuthError } from "next-auth";
 
-import { auth, signIn, googleConfigured } from "@/lib/auth";
-import { registerUser, MIN_PASSWORD_LENGTH } from "@/lib/accounts";
+import { auth, googleConfigured, signIn } from "@/lib/auth";
+import { MIN_PASSWORD_LENGTH } from "@/lib/accounts";
+import { signInWithPassword, createAccount } from "@/app/actions/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -12,37 +12,6 @@ const MESSAGES: Record<string, string> = {
   "weak-password": `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`,
   "email-taken": "An account with that email already exists — sign in instead.",
 };
-
-async function signInWithPassword(formData: FormData) {
-  "use server";
-  try {
-    await signIn("password", {
-      email: String(formData.get("email") ?? ""),
-      password: String(formData.get("password") ?? ""),
-      redirectTo: "/",
-    });
-  } catch (error) {
-    if (error instanceof AuthError) redirect("/signin?error=bad-credentials");
-    throw error;
-  }
-}
-
-async function createAccount(formData: FormData) {
-  "use server";
-  const email = String(formData.get("email") ?? "");
-  const password = String(formData.get("password") ?? "");
-  const name = String(formData.get("name") ?? "");
-
-  const result = await registerUser({ email, password, name });
-  if (!result.ok) redirect(`/signin?mode=register&error=${result.problem}`);
-
-  try {
-    await signIn("password", { email, password, redirectTo: "/" });
-  } catch (error) {
-    if (error instanceof AuthError) redirect("/signin?error=bad-credentials");
-    throw error;
-  }
-}
 
 export default async function SignInPage({
   searchParams,

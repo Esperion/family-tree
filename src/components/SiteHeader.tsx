@@ -1,7 +1,8 @@
 import Link from "next/link";
 
-import { auth, signOut } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { signOutToHome } from "@/app/actions/auth";
 
 export async function SiteHeader() {
   const session = await auth();
@@ -26,12 +27,7 @@ export async function SiteHeader() {
           <>
             {isAdmin && <span className="badge badge-admin">Admin</span>}
             <span className="site-user">{session.user.name ?? session.user.email}</span>
-            <form
-              action={async () => {
-                "use server";
-                await signOut({ redirectTo: "/" });
-              }}
-            >
+            <form action={signOutToHome}>
               <button type="submit" className="link-button">
                 Sign out
               </button>
