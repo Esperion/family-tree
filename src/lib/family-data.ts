@@ -43,5 +43,7 @@ export async function loadFamilyGraph(familyId: string): Promise<Person[]> {
     birthYear: person.birthYear ?? undefined,
     deathYear: person.deathYear ?? undefined,
     parents: parentsByChild.get(person.id) ?? [],
+    aliases: person.aliases,
+    photoUrl: person.photoUrl,
   }));
 }
