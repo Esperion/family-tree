@@ -44,8 +44,9 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          # The app never connects during `next build` — the landing page is
-          # force-dynamic — but PrismaClient is constructed when its module is
-          # imported, and that needs the vars to exist. Dummy values are fine.
+          # The app never connects during `next build` — pages that read the DB
+          # are force-dynamic — but PrismaClient is constructed on import and
+          # Auth.js wants a secret. Dummy values are fine for a build.
           DATABASE_URL: postgresql://user:password@localhost:5432/db
           DIRECT_URL: postgresql://user:password@localhost:5432/db
+          AUTH_SECRET: build-only-placeholder-secret-not-used-at-runtime
