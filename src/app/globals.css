@@ -249,41 +249,63 @@ body {
 
 /* ---- sign-in page (Phase 1) ---- */
 .signin {
-  display: flex;
-  flex-direction: column;
+  display: grid;
   gap: 20px;
-  max-width: 420px;
+  max-width: 760px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  align-items: start;
 }
 
-.signin-dev {
+.signin-error {
+  max-width: 760px;
+  margin: 0 0 20px;
+  padding: 10px 14px;
+  border: 1px solid #d9534f;
+  border-radius: 4px;
+  background: #d9534f14;
+  color: #d9534f;
+  font-size: 13.5px;
+}
+
+.signin-form {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding-top: 16px;
-  border-top: 1px solid var(--rule);
+  gap: 6px;
+  padding: 18px;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  background: var(--surface);
 }
 
-.signin-dev label {
+.signin-form h2 {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+
+.signin-form label {
+  margin-top: 6px;
   font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
-  font-size: 11px;
+  font-size: 10.5px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
 }
 
-.signin-dev-row {
-  display: flex;
-  gap: 8px;
-}
-
-.signin-dev input {
-  flex: 1;
+.signin-form input {
   padding: 9px 11px;
   font: inherit;
   color: var(--ink);
-  background: var(--surface);
+  background: var(--bg);
   border: 1px solid var(--rule);
   border-radius: 4px;
+}
+
+.signin-form .button {
+  margin-top: 14px;
+}
+
+.signin-google {
+  grid-column: 1 / -1;
 }
 
 .button {
@@ -299,4 +321,10 @@ body {
 
 .button:hover {
   filter: brightness(1.05);
+}
+
+.button-secondary {
+  color: var(--ink);
+  background: var(--surface);
+  border-color: var(--rule);
 }
