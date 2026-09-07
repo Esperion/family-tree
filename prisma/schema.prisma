@@ -1,0 +1,191 @@
+// Family Tree platform — data model.
+//
+// Phase 0 lays down every table the plan needs so later phases are pure wiring:
+//   - Auth.js adapter models (User / Account / Session / VerificationToken)
+//   - the family-tree domain (Family / Membership / Person / ParentChild / Union)
+//
+// A Person records nothing about its own descendants. Parent -> child links live
+// in ParentChild; couples live in Union and exist only for rendering. Everything
+// else (generations, ancestry, siblings) stays derived in src/lib/family.ts.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL") // pooled — used by the app
+  directUrl = env("DIRECT_URL") // direct — used by migrations
+}
+
+// ---------------------------------------------------------------------------
+// Auth.js (NextAuth) adapter models — wired up in Phase 1, created now so the
+// first migration is the only schema-wide one.
+// ---------------------------------------------------------------------------
+
+model User {
+  id              String       @id @default(cuid())
+  name            String?
+  email           String       @unique
+  emailVerified   DateTime?
+  image           String?
+  isSuperAdmin    Boolean      @default(false) // global admin — "access to everything"
+  accounts        Account[]
+  sessions        Session[]
+  memberships     Membership[]
+  claimedPeople   Person[]     @relation("PersonClaimedBy")
+  createdFamilies Family[]     @relation("FamilyCreatedBy")
+  createdAt       DateTime     @default(now())
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ---------------------------------------------------------------------------
+// Family-tree domain
+// ---------------------------------------------------------------------------
+
+enum Visibility {
+  PUBLIC
+  PRIVATE
+}
+
+enum MemberStatus {
+  INVITED
+  ACTIVE
+}
+
+enum ParentKind {
+  BIOLOGICAL
+  ADOPTIVE
+  STEP
+  GUARDIAN
+}
+
+enum UnionKind {
+  MARRIAGE
+  PARTNERSHIP
+}
+
+model Family {
+  id            String        @id @default(cuid())
+  slug          String        @unique
+  name          String
+  description   String?
+  visibility    Visibility    @default(PRIVATE)
+  coverPhotoUrl String? // optional, for the directory card (Phase 2)
+  // Nullable: the seed family and any family created before Phase 1 has no
+  // creator. Once set, it guards family-level destructive actions.
+  createdById   String?
+  createdBy     User?         @relation("FamilyCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  members       Membership[]
+  people        Person[]
+  unions        Union[]
+  parentEdges   ParentChild[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+// A row here = "this user is an editor of this family". One non-admin role for
+// now (plan decision 6); a `role` column returns when sharing/delegation lands.
+model Membership {
+  id           String       @id @default(cuid())
+  userId       String
+  familyId     String
+  status       MemberStatus @default(ACTIVE)
+  invitedEmail String?
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  family       Family       @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  createdAt    DateTime     @default(now())
+
+  @@unique([userId, familyId])
+  @@index([familyId])
+}
+
+model Person {
+  id            String        @id @default(cuid())
+  familyId      String
+  family        Family        @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  givenName     String
+  familyName    String?
+  birthYear     Int?
+  deathYear     Int?
+  gender        String?
+  notes         String?
+  aliases       String[] // also-known-as: maiden name, nickname, anglicised name
+  photoUrl      String? // Vercel Blob URL; null -> render initials
+  claimedById   String? // optional link to the real User this node represents
+  claimedBy     User?         @relation("PersonClaimedBy", fields: [claimedById], references: [id], onDelete: SetNull)
+  edgesAsChild  ParentChild[] @relation("ChildEdges") // links up to this person's parents
+  edgesAsParent ParentChild[] @relation("ParentEdges") // links down to this person's children
+  unionsAsA     Union[]       @relation("UnionPartnerA")
+  unionsAsB     Union[]       @relation("UnionPartnerB")
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([familyId])
+}
+
+// The normalised form of the old `Person.parents: string[]`.
+model ParentChild {
+  id       String     @id @default(cuid())
+  familyId String
+  parentId String
+  childId  String
+  kind     ParentKind @default(BIOLOGICAL)
+  family   Family     @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  parent   Person     @relation("ParentEdges", fields: [parentId], references: [id], onDelete: Cascade)
+  child    Person     @relation("ChildEdges", fields: [childId], references: [id], onDelete: Cascade)
+
+  @@unique([parentId, childId])
+  @@index([familyId])
+  @@index([childId])
+}
+
+// Spouses / partners. Display metadata only — children keep their own parent
+// edges; a union is never required to record a child.
+model Union {
+  id         String    @id @default(cuid())
+  familyId   String
+  partnerAId String
+  partnerBId String
+  kind       UnionKind @default(MARRIAGE)
+  startYear  Int?
+  endYear    Int?
+  family     Family    @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  partnerA   Person    @relation("UnionPartnerA", fields: [partnerAId], references: [id], onDelete: Cascade)
+  partnerB   Person    @relation("UnionPartnerB", fields: [partnerBId], references: [id], onDelete: Cascade)
+
+  @@index([familyId])
+}
